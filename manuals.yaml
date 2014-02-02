@@ -1,0 +1,95 @@
+
+- job-template:
+    name: 'openstack-install-deploy-guide-{distribution}-{lang}'
+    project-type: maven
+    concurrent: false
+
+    logrotate:
+        numToKeep: 3
+    
+    triggers:
+        - timed: '@daily'
+
+    properties:
+      - inject:
+          script-file: /usr/local/jenkins/slave_scripts/docbook-properties.sh
+          properties-file: gerrit-doc.properties
+
+    prebuilders:
+      - shell: |
+          # Cleanup generated
+          rm -rf generated
+          tx pull -f -l {lang}
+          ./tools/generatedocbook -l {lang} -b common
+          ./tools/generatedocbook -l {lang} -b glossary
+          ./tools/generatedocbook -l {lang} -b user-guide
+          ./tools/generatedocbook -l {lang} -b install-guide
+          cp doc/pom.xml generated/{lang}/pom.xml
+    scm:
+     - git:
+         url: https://github.com/openstack/openstack-manuals.git
+         wipe-workspace: false
+         skip-tag: true
+         branches:
+            - master
+
+    maven:
+      maven-name: Maven3
+      root-module:
+        group-id: org.openstack.docs
+        artifact-id: openstack-install-guide
+      root-pom: generated/{lang}/install-guide/pom.xml
+      goals: '-Doperating.system={system} -Dprofile.os={profileos} -Drelease.path.name=${{DOC_RELEASE_PATH}} -Dcomments.enabled=${{DOC_COMMENTS_ENABLED}} clean generate-sources -B'
+
+    publishers:
+      # - console-log
+      - ftp:
+          site: 'przytulnoc'
+          source: 'generated/{lang}/install-guide/target/docbkx/webhelp/**'
+          target: '/{lang}/'
+          remove-prefix: 'generated/{lang}/install-guide/target/docbkx/webhelp/'
+          excludes: '**/*.xml,**/null*'
+
+- job-template:
+    name: 'openstack-operations-guide-{lang}'
+    project-type: maven
+    concurrent: false
+
+    logrotate:
+        numToKeep: 3
+    
+    triggers:
+        - timed: '@daily'
+
+    properties:
+      - inject:
+          script-file: /usr/local/jenkins/slave_scripts/docbook-properties.sh
+          properties-file: gerrit-doc.properties
+
+    prebuilders:
+      - shell: | 
+            tx pull -f -l {lang}
+            ./tools/generatedocbook -l {lang} -b openstack-ops
+    scm:
+     - git:
+         url: https://github.com/openstack/operations-guide.git
+         wipe-workspace: false
+         skip-tag: true
+         branches:
+            - master
+
+
+    maven:
+      maven-name: Maven3
+      root-module:
+        group-id: org.openstack.docs
+        artifact-id: openstack-ops-manual
+      root-pom: generated/{lang}/openstack-ops/pom.xml
+      goals: '-Drelease.path.name=${{DOC_RELEASE_PATH}} -Dcomments.enabled=${{DOC_COMMENTS_ENABLED}} clean generate-sources -B'
+    publishers:
+      - ftp:
+          site: przytulnoc
+          source: 'generated/{lang}/openstack-ops/target/docbkx/webhelp/**'
+          target: '/{lang}/'
+          remove-prefix: 'generated/{lang}/openstack-ops/target/docbkx/webhelp/'
+          excludes: '**/*.xml,**/null*'

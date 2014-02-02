@@ -1,0 +1,39 @@
+- project:
+    name: 'openstack-guides'
+    lang:
+        - 'pl_PL'
+        - 'kr_KR'
+        - 'de'
+        - 'pt_BR'
+        - 'zh_CN'
+        - 'ru'
+        - 'pa_IN'
+        - 'es'
+        - 'fr'
+        - 'it_IT'
+        - 'it'
+        - 'vi_VN'
+        - 'pt'
+        - 'cs'
+        - 'zh_TW'
+    jobs:
+        - 'openstack-operations-guide-{lang}'
+        - openstack-install-deploy-guide-{distribution}-{lang}:
+            distribution: debian
+            system: apt-debian
+            profileos: "debian"
+
+        - openstack-install-deploy-guide-{distribution}-{lang}:
+            distribution: fedora
+            system: yum
+            profileos: "centos;fedora;rhel"
+
+        - openstack-install-deploy-guide-{distribution}-{lang}:
+            distribution: opensuse
+            system: zypper
+            profileos: "opensuse;sles"
+
+        - openstack-install-deploy-guide-{distribution}-{lang}:
+            distribution: ubuntu
+            system: apt
+            profileos: "ubuntu"
