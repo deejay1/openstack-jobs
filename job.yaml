@@ -16,6 +16,7 @@
         - 'pt'
         - 'cs'
         - 'zh_TW'
+        - 'ja'
     jobs:
         - 'openstack-operations-guide-{lang}'
         - openstack-install-deploy-guide-{distribution}-{lang}:
